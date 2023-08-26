@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "ml-dengue-predict"
+version = "0.1.0"
+description = ""
+authors = ["Sandro Loch <es.loch@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "ml_dengue_predict"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.0.3"
+python-dotenv = "^1.0.0"
+sqlalchemy = "^2.0.20"
+psycopg2 = "^2.9.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
