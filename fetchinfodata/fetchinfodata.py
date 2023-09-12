@@ -2,10 +2,76 @@ import pandas as pd
 from settings import get_sqla_conn, ROOT_DIR, ESTADOS
 from typing import Tuple
 
+
 # Define the database engine
 DB_ENGINE = get_sqla_conn(database="dengue")
 
-def get_notif_by_year(disease: str, start_year: str, end_year: str) -> Tuple[str, pd.DataFrame]:
+def df_to_csv(df: pd.DataFrame, fname: str) -> None:
+    """
+    Saves a DataFrame to a CSV file.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to be saved.
+        fname (str): The file name.
+
+    Returns:
+        None
+    """
+    df.to_csv(f"{ROOT_DIR}/dataset/{fname}.csv")
+
+def get_notif_custom(
+        fields_to_return: List[str],
+        disease: str,
+        start_year: str,
+        end_year: str
+    ) -> Tuple[str, pd.DataFrame]:
+    """
+    Retrieves notifications by year and disease.
+
+    Args:
+        fields_to_return (List[str]): A list of fields to select in the query.
+        disease (str): The disease name (e.g., "dengue", "chikungunya", "zika").
+        start_year (str): The start year.
+        end_year (str): The end year.
+
+    Returns:
+        Tuple containing the SQL query and a DataFrame with the data.
+    """
+    CID10 = {"dengue": "A90", "chikungunya": "A92.0", "zika": "A928"}
+
+    # Combine the fields to return into a comma-separated string
+    fields_str = ', '.join(fields_to_return)
+
+    # SQL query to retrieve notification data with dynamic fields to return
+    SQL = f"""
+        SELECT
+            {fields_str}
+        FROM
+            "Municipio"."Notificacao" AS n
+        WHERE
+            n.ano_notif BETWEEN {start_year} AND {end_year}
+        AND cid10_codigo = '{CID10[disease]}'
+        ORDER BY
+            n.dt_notific,
+            n.municipio_geocodigo;
+        """
+
+    # Replace any line breaks or extra whitespaces
+    SQL = ' '.join(SQL.split())
+
+    with DB_ENGINE.connect() as conn:
+        print("Fetching Notification data for: ", disease)
+        df = pd.read_sql_query(SQL, conn)
+
+    fname = f"notification_{disease}_{start_year}_{end_year}"
+
+    return fname, df
+
+def get_notif_by_year(
+        disease: str,
+        start_year: str,
+        end_year: str
+    ) -> Tuple[str, pd.DataFrame]:
     """
     Retrieves notifications by year and disease.
 
@@ -52,20 +118,11 @@ def get_notif_by_year(disease: str, start_year: str, end_year: str) -> Tuple[str
 
     return fname, df
 
-def df_to_csv(df: pd.DataFrame, fname: str) -> None:
-    """
-    Saves a DataFrame to a CSV file.
-
-    Args:
-        df (pd.DataFrame): The DataFrame to be saved.
-        fname (str): The file name.
-
-    Returns:
-        None
-    """
-    df.to_csv(f"{ROOT_DIR}/dataset/{fname}.csv")
-
-def fetch_weather(uf: str, start_date: str, end_date: str) -> Tuple[str, pd.DataFrame]:
+def fetch_weather(
+        uf: str,
+        start_date: str,
+        end_date: str
+    ) -> Tuple[str, pd.DataFrame]:
     """
     Retrieves weather data for a specific state and date range.
 
@@ -102,7 +159,11 @@ def fetch_weather(uf: str, start_date: str, end_date: str) -> Tuple[str, pd.Data
 
     return fname, df
 
-def weather_notific(uf: str, start_date: str, end_date: str) -> Tuple[str, pd.DataFrame]:
+def weather_notific(
+        uf: str,
+        start_date: str,
+        end_date: str
+    ) -> Tuple[str, pd.DataFrame]:
     """
     Retrieves weather and notification data for a specific state and date range.
 
@@ -151,8 +212,58 @@ def weather_notific(uf: str, start_date: str, end_date: str) -> Tuple[str, pd.Da
 
     return fname, df
 
+def get_notif_custom(
+        fields_to_return: List[str],
+        disease: str,
+        start_year: str,
+        end_year: str
+    ) -> Tuple[str, pd.DataFrame]:
+    """
+    Retrieves custom notifications by year and disease.
+
+    Args:
+        fields_to_return (List[str]): A list of fields to select in the query.
+        disease (str): The disease name (e.g., "dengue", "chikungunya", "zika").
+        start_year (str): The start year.
+        end_year (str): The end year.
+
+    Returns:
+        Tuple containing the file name and a DataFrame with the data.
+    """
+    CID10 = {"dengue": "A90", "chikungunya": "A92.0", "zika": "A928"}
+
+    # Combine the fields to return into a comma-separated string
+    fields_str = ', '.join(fields_to_return)
+
+    # SQL query to retrieve custom notification data with dynamic fields to return
+    SQL = f"""
+        SELECT
+            {fields_str}
+        FROM
+            "Municipio"."Notificacao" AS n
+        WHERE
+            n.ano_notif BETWEEN {start_year} AND {end_year}
+        AND cid10_codigo = '{CID10[disease]}'
+        ORDER BY
+            n.dt_notific,
+            n.municipio_geocodigo;
+        """
+
+    # Replace any line breaks or extra whitespaces
+    SQL = ' '.join(SQL.split())
+
+    with DB_ENGINE.connect() as conn:
+        print("Fetching Custom Notification data for:", disease)
+        df = pd.read_sql_query(SQL, conn)
+
+    fname = f"custom_notification_{disease}_{start_year}_{end_year}"
+
+    return fname, df
+
+
 if __name__ == "__main__":
-    choice = input('Choose the dataset you want to export; W for weather data, N for notification data, or WN for combined data: ')
+    choice = input(
+        'Choose the dataset you want to export; W for weather data, N for notification data, C for custom data, or WN for combined data: ')
 
     if choice == 'N':
         # Get notification data and save to CSV
@@ -170,6 +281,18 @@ if __name__ == "__main__":
         end_date = input('End date (YYYY-MM-DD): ')
 
         fname, data = fetch_weather(uf, start_date, end_date)
+        df_to_csv(data, fname)
+
+    elif choice == 'C':
+        # Get custom notification data and save to CSV
+        fields_to_return = input(
+            'Fields to return (comma-separated, e.g., dt_notific, municipio_geocodigo, classi_fin): '
+        ).split(',')
+        disease = input("Disease (e.g., dengue, chikungunya, zika): ")
+        start_year = input('Start year: ')
+        end_year = input('End year: ')
+
+        fname, data = get_notif_custom(fields_to_return, disease, start_year, end_year)
         df_to_csv(data, fname)
 
     elif choice == 'WN':

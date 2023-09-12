@@ -5,7 +5,7 @@ description = ""
 authors = ["Sandro Loch <es.loch@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "ml_dengue_predict"}]
+packages = [{include = "fetchinfodata"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
