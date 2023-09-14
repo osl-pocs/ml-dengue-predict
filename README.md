@@ -4,7 +4,7 @@ This project aims to predict the number of dengue cases using machine learning m
 
 ## Table of Contents
 - [Project Overview](#project-overview)
-- [Prerequisites](#prerequisites)
+- [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Project Notebook](#project-notebook)
@@ -18,7 +18,7 @@ Dengue is a mosquito-borne disease that can have a significant impact on public 
 
 This project uses machine learning techniques to create a predictive model based on historical weather data and epidemiological information. The goal is to forecast the number of dengue cases for specific regions and time periods.
 
-## Prerequisites
+## Requirements
 
 Before you begin, ensure you have the following installed on your machine:
 
