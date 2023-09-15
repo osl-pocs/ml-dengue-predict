@@ -87,7 +87,7 @@ We welcome contributions from the community. If you'd like to contribute to this
 
 ## License
 
-This project is licensed under the ["BSD License"](LICENSE.md).
+This project is licensed under the [BSD License](./LICENSE.md).
 
 ---
 
