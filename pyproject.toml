@@ -20,6 +20,7 @@ numpy = "^1.25.2"
 graphviz = "^0.20.1"
 pylatex = "^1.4.1"
 seaborn = "^0.13.0"
+plotly = "^5.17.0"
 
 
 [build-system]
