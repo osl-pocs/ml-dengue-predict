@@ -1,6 +1,6 @@
 import pandas as pd
 from settings import get_sqla_conn, ROOT_DIR, ESTADOS
-from typing import Tuple
+from typing import Tuple, List
 
 
 # Define the database engine
